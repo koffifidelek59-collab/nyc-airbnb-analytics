@@ -1,0 +1,559 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}\usepackage[utf8]{inputenc}\usepackage{times}
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{booktabs}\usepackage{array}\usepackage{enumitem}\usepackage{tabularx}
+\usepackage{caption}\usepackage{fancyhdr}\usepackage{parskip}\usepackage{float}
+\usepackage{setspace}\onehalfspacing
+\usepackage{amsmath}
+\usepackage{xurl}\usepackage[hidelinks]{hyperref}
+\captionsetup{font=small,labelfont=bf,labelsep=colon,
+              justification=justified,singlelinecheck=false}
+\setlist[itemize]{leftmargin=1.3em,itemsep=0pt,parsep=0pt,topsep=2pt}
+\setlist[enumerate]{leftmargin=1.6em,itemsep=0pt,parsep=0pt,topsep=2pt}
+\setlength{\parskip}{4pt plus 1pt}\setlength{\emergencystretch}{2em}
+\renewcommand{\topfraction}{0.85}\renewcommand{\bottomfraction}{0.7}\renewcommand{\textfraction}{0.1}\renewcommand{\floatpagefraction}{0.75}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\footnotesize KOUAME Koffi Fid\`ele}
+\fancyhead[C]{\footnotesize NEW YORK CITY AIRBNB ANALYTICS}
+\fancyhead[R]{\footnotesize Data Analysis Internship}
+\fancyfoot[C]{\thepage}\renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{15pt}
+\newcommand{\fig}[3][0.92]{\begin{figure}[H]\centering\includegraphics[width=#1\linewidth]{#2}\caption{#3}\end{figure}}
+\newcommand{\capture}[2]{\IfFileExists{figures/#1}{\begin{figure}[H]\centering\setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.4pt}%
+\fbox{\includegraphics[width=\dimexpr\linewidth-0.8pt\relax]{#1}}\caption{#2}\end{figure}}{}}
+
+\begin{document}
+
+\begin{titlepage}\centering
+\singlespacing
+\vspace*{3cm}
+{\large\scshape Data Analysis Internship}\\[0.4cm]
+{\normalsize Task 12: Final Data Analysis Project}\\[2.0cm]
+\rule{\linewidth}{0.5pt}\\[0.8cm]
+{\LARGE\bfseries New York City Airbnb Market Analysis}\\[0.6cm]
+{\large Where, What and at Which Price?\\ Listing Types, Areas, Prices, Demand and Hosts\\ of 48{,}895 Listings (2019)}\\[0.8cm]
+\rule{\linewidth}{0.5pt}\\[1.2cm]
+{\normalsize Data Understanding $\bullet$ Cleaning $\bullet$ Exploratory Analysis $\bullet$ Price Model
+$\bullet$ Power BI Dashboard $\bullet$ Insights and Recommendations}\\[3.0cm]
+{\large\itshape Prepared by}\\[0.5cm]
+{\Large\bfseries KOUAME Koffi Fid\`ele}\\[0.6cm]
+{\large 8 October 2026}
+\vfill\end{titlepage}
+
+\singlespacing
+\tableofcontents\newpage
+\onehalfspacing
+
+% =====================================================================
+\section{Project overview}
+
+\textbf{Context.} Airbnb has become a large part of the accommodation offer of New York City.
+Three audiences need to understand this market: \textbf{hosts}, who want to know where and at
+which price to list; \textbf{Airbnb}, which follows supply and demand in each area; and
+\textbf{the city}, which follows how short-term rentals spread across neighbourhoods.
+
+\textbf{Objective.} This final project carries a complete analysis, from the raw file to an
+interactive dashboard, on \textbf{one dataset only, the one supplied}: 48{,}895 Airbnb listings
+of New York City in 2019. It answers the seven questions of the brief:
+\begin{enumerate}[label=Q\arabic*.]
+\item Which listing types are the most common?
+\item Which areas have the most activity?
+\item How do prices differ across areas?
+\item Is there a relationship between price, ratings and reviews?
+\item Which factors seem to affect price?
+\item Which areas or listings perform best?
+\item Are there noticeable patterns or trends?
+\end{enumerate}
+
+\textbf{Deliverables.} The notebook \texttt{NYC-Airbnb-Analytics.ipynb} reproduces every number and
+figure of this report; the cleaned dataset and the cleaning log are in \texttt{data/processed/};
+the result tables in \texttt{results/}; the Power BI dashboard, with its DAX measures, Power Query
+code and theme, in \texttt{powerbi/}; the final presentation (20 slides) in \texttt{presentation/}.
+
+\textbf{Summary of the results.}
+\begin{itemize}
+\item After cleaning, \textbf{48{,}645 listings} of \textbf{37{,}283 hosts} remain (99.49\% of the file).
+A typical night costs \textbf{\$105} (median); the listings received \textbf{1.14 million reviews}.
+\item \textbf{Entire homes (52\%) and private rooms (46\%)} make the market, at a median of \$160 and \$70.
+\item \textbf{Manhattan and Brooklyn hold 85\% of the listings}; Brooklyn receives the most reviews.
+\item \textbf{Prices fall with the distance from Manhattan}: \$149 in Manhattan, \$65 in the Bronx.
+\item \textbf{Room type and location set the price}: an entire home costs +119\% and a Manhattan
+listing +37\%, other things equal; the model explains 52\% of the variation.
+\item \textbf{Price and reviews are almost unrelated} ($\rho = -0.05$); the file has no ratings.
+\item \textbf{The busiest listings are cheap rooms near the airports in Queens.}
+\item \textbf{40\% of the listings look inactive}, and \textbf{0.9\% of the hosts run 10\% of the listings}.
+\end{itemize}
+
+% =====================================================================
+\section{Dataset information}
+
+\subsection{Source and scope}
+
+The file \texttt{AB\_NYC\_2019.csv}, supplied for the project and the only dataset used, describes \textbf{48{,}895 listings} offered in New York City, one row per listing,
+with \textbf{16 columns}. The last review date of the file is 8 July 2019, which dates the snapshot.
+The listings belong to \textbf{37{,}457 hosts} and \textbf{221 neighbourhoods} in the five boroughs.
+A grey map of the city (\texttt{New\_York\_City\_.png}) is supplied with the data and is used as
+the background of the maps.
+
+\subsection{Columns, meaning and types}
+
+\begin{table}[H]\centering\small
+\caption{Columns of the file, with the type read by pandas and the missing values.}
+\begin{tabularx}{\linewidth}{@{}lXlr@{}}
+\toprule
+Column & Meaning & Type & Missing\\\midrule
+id & listing identifier & integer & 0\\
+name & title of the listing & text & 16\\
+host\_id & host identifier & integer & 0\\
+host\_name & first name of the host & text & 21\\
+neighbourhood\_group & borough (Manhattan, Brooklyn, Queens, Bronx, Staten Island) & text & 0\\
+neighbourhood & neighbourhood (221) & text & 0\\
+latitude, longitude & position of the listing & decimal & 0\\
+room\_type & Entire home/apt, Private room, Shared room & text & 0\\
+price & asked price per night (US\$) & integer & 0\\
+minimum\_nights & minimum stay required & integer & 0\\
+number\_of\_reviews & reviews received since the listing was created & integer & 0\\
+last\_review & date of the last review & text (date) & 10{,}052\\
+reviews\_per\_month & average reviews per month & decimal & 10{,}052\\
+calculated\_host\_listings\_count & listings of the same host in the file & integer & 0\\
+availability\_365 & days available for booking in the next 365 days & integer & 0\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{What the data can and cannot answer}
+
+The file describes the \textbf{offer} (where, what, at which price, under which conditions) and gives
+a \textbf{proxy of demand}: reviews. It has \textbf{no rating column}, no booking, no revenue and no
+size of the property (bedrooms, capacity). Question Q4 on ratings is therefore answered with reviews,
+which measure demand, not satisfaction. Prices are \emph{asked} prices per night.
+
+Every numeric column is strongly skewed: the median price is \$106 but the mean is \$153 and the
+maximum \$10{,}000; the median minimum stay is 3 nights but the maximum 1{,}250. The analysis therefore
+uses \textbf{medians} to describe a typical listing and rank-based tests.
+
+% =====================================================================
+\section{Data cleaning process}\label{sec:clean}
+
+\subsection{Issues found}
+
+\begin{table}[H]\centering\small
+\caption{Data quality audit and treatment.}
+\begin{tabularx}{\linewidth}{@{}Xrl@{}}
+\toprule
+Issue & Rows & Treatment\\\midrule
+\texttt{last\_review} and \texttt{reviews\_per\_month} missing & 10{,}052 & structural: rate set to 0, flag \texttt{has\_reviews}\\
+Listing name missing & 16 & \emph{Unnamed listing}\\
+Host name missing & 21 & column dropped (personal data)\\
+Spaces around listing names & 254 & trimmed\\
+\texttt{last\_review} stored as text & 38{,}843 & converted to a date\\
+Price = \$0 & 11 & removed\\
+Price above \$1{,}000 per night (6 at \$9{,}999 or \$10{,}000) & 239 & removed from the analysis set\\
+Minimum nights above 365 (up to 1{,}250) & 14 & capped at 365\\
+Duplicates (on the id and on all other columns) & 0 & none found\\
+Map file \texttt{.png} that is in fact a JPEG & 1 file & read by its content\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The missing values are not errors: the review date and the review rate are missing \textbf{exactly}
+for the 10{,}052 listings with 0 reviews, because no review date exists for them. Setting the rate to
+0 is therefore exact, and the date stays empty. A listing cannot be free, so the 11 prices at \$0
+are errors; the 239 prices above \$1{,}000 (0.49\%) include placeholders (\$9{,}999, \$10{,}000) and
+luxury outliers that would distort averages. They stay in the raw file. Two values that look extreme
+are \textbf{kept} because they are plausible: 36\% of the listings have 0 days of availability
+(calendar closed or fully booked) and one listing has 58.5 reviews per month (a hotel-like room in
+the Theater District). The 989 listings that share a title with another one are different listings
+of the same host, not duplicates.
+
+\subsection{Cleaning log and cleaned dataset}
+
+\begin{table}[H]\centering\small
+\caption{Cleaning log (\texttt{data/processed/cleaning\_log.csv}), also shown in the dashboard.}
+\begin{tabularx}{\linewidth}{@{}rlXrr@{}}
+\toprule
+Step & Name & Action & Rows after & Median price\\\midrule
+1 & Raw file & \texttt{AB\_NYC\_2019.csv} as supplied & 48{,}895 & \$106\\
+2 & Duplicates & checked on the id and on all other columns: none & 48{,}895 & \$106\\
+3 & Columns & \texttt{host\_name} dropped (16 columns $\to$ 15) & 48{,}895 & \$106\\
+4 & Text & 254 names trimmed; 16 missing names filled & 48{,}895 & \$106\\
+5 & Types & \texttt{last\_review} converted to a date & 48{,}895 & \$106\\
+6 & Missing reviews & 10{,}052 never-reviewed listings: rate = 0 & 48{,}895 & \$106\\
+7 & Price = 0 & 11 listings removed & 48{,}884 & \$106\\
+8 & Price $>$ \$1{,}000 & 239 listings removed & 48{,}645 & \$105\\
+9 & Minimum nights & 14 values capped at 365 & 48{,}645 & \$105\\
+10 & Derived columns & bands, host size, recency, sort orders & 48{,}645 & \$105\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The cleaned dataset (\texttt{airbnb\_nyc\_clean.csv}) has \textbf{48{,}645 listings (99.49\%)}
+and \textbf{29 columns}: the 15 original columns kept and 14 derived columns used by the analysis and
+the dashboard: a flag \emph{has reviews}, price band (7 bands), minimum-stay class (1-2, 3-6, 7-29, 30+ nights), availability band
+(0, 1-90, 91-180, 181-270, 271-365 days), host size (1, 2-5, 6+ listings), year of the last review,
+days since the last review, \emph{active in the last 12 months} (reviewed at most 365 days before
+8 July 2019) and sort orders. The median price moves only from \$106 to \$105: the cleaning does
+not change the picture of a typical listing.
+
+% =====================================================================
+\section{Exploratory analysis}
+
+\subsection{Key performance indicators}
+
+\begin{table}[H]\centering\small
+\caption{KPIs of the cleaned dataset (also the KPI cards of the dashboard).}
+\begin{tabularx}{\linewidth}{@{}lrX@{}}
+\toprule
+KPI & Value & Comment\\\midrule
+Listings & 48{,}645 & in 221 neighbourhoods\\
+Hosts & 37{,}283 & 1.3 listings per host on average\\
+Median / average price per night & \$105 / \$141 & the mean is pulled up by expensive listings\\
+Total reviews & 1{,}136{,}096 & demand proxy\\
+Listings with at least one review & 79.6\% & \\
+Reviewed in the last 12 months & 59.8\% & the clearly active share\\
+Median availability & 44 days a year & mean 112 days\\
+Listings of multi-listing hosts & 33.9\% & hosts with 2 listings or more\\
+Most common room type & Entire home/apt & 51.8\%\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Which listing types are the most common? (Q1)}
+\fig{fig01_room_types}{Listings by room type with their median price (left) and room-type mix in each borough (right).}
+\textbf{Entire homes and apartments are the most common type (25{,}216 listings, 51.8\%)}, closely
+followed by \textbf{private rooms (22{,}273, 45.8\%)}; shared rooms are marginal (1{,}156, 2.4\%).
+The two main types are \textbf{two different products}: an entire home costs a median \$160 per
+night, a private room \$70, a shared room \$45. The mix depends on the borough: entire homes dominate
+in Manhattan (61\%), private rooms in Queens and the Bronx (60\%), where hosts rent a room in their
+own home. Private rooms receive almost as many reviews as entire homes (47\% against 51\% of all
+reviews) with fewer listings.
+
+\subsection{Which areas have the most activity? (Q2)}
+\fig{fig02_boroughs}{Supply (share of listings), demand (share of reviews) and reviews per listing by borough.}
+\textbf{Manhattan and Brooklyn concentrate the activity}: 85\% of the listings and 83\% of the
+reviews. Manhattan has the most listings (44.2\%), but \textbf{Brooklyn receives the most reviews}
+(42.8\% against 39.9\%). The small boroughs are used more intensively: \textbf{Staten Island (31.1
+reviews per listing), Queens (27.7) and the Bronx (26.0)} beat Manhattan (21.1), and their median
+review rate (0.76 to 1.00 per month) is about three times that of Manhattan (0.29).
+\fig{fig03_neighbourhoods}{The 12 neighbourhoods with the most listings (left) and the most reviews (right).}
+The ten largest neighbourhoods hold 48\% of the listings. \textbf{Williamsburg} (3{,}910 listings)
+and \textbf{Bedford-Stuyvesant} (3{,}700) lead the supply, and \textbf{Bedford-Stuyvesant is the most
+reviewed neighbourhood} of the city (109{,}862 reviews, ahead of Williamsburg with 85{,}412).
+\fig{fig04_map}{Map of the listings by borough (left) and by price per night (right, log colour scale), on the map supplied with the data.}
+The maps show the listings spreading from Midtown and Lower Manhattan into north Brooklyn and western
+Queens, and the highest prices in Lower and Midtown Manhattan.
+
+\subsection{How do prices differ across areas? (Q3)}
+\fig{fig05_price_distribution}{Distribution of the price per night (left, log scale) and share of listings by price band (right).}
+The median night costs \textbf{\$105} and the mean \$141; half of the listings ask between \$69 and
+\$175, 35\% ask \$50 to \$99 and only 8\% ask \$300 or more.
+\fig{fig06_price_borough_room}{Price per night by borough and room type (box = middle 50\% of the listings, label = median, log scale).}
+By borough, the median price is \textbf{\$149 in Manhattan}, \$90 in Brooklyn, \$75 in Queens and
+Staten Island and \textbf{\$65 in the Bronx}. For an entire home: Manhattan \$190, Brooklyn \$145,
+Queens \$120, Bronx and Staten Island \$100. Inside every borough an entire home costs about twice a
+private room, and the boxes overlap: location explains only part of the price.
+\fig{fig07_neighbourhood_prices}{Median price of an entire home by neighbourhood (30+ listings): the 10 most and the 10 least expensive.}
+By neighbourhood, for an entire home, \textbf{Tribeca (\$305)}, the Flatiron District, NoHo and
+SoHo are the most expensive; Midwood (\$88) and Queens Village (\$97) the least expensive: a ratio
+of \textbf{3.5 to 1} for the same type of product.
+
+\subsection{Is there a relationship between price, ratings and reviews? (Q4)}
+\fig{fig08_price_reviews}{Price and number of reviews of every reviewed listing (left, hexbin, log scales), median review rate (middle) and share of never-reviewed listings (right) by price band.}
+The file has \textbf{no rating column}, so the question is answered with reviews. \textbf{Price and
+reviews are almost unrelated}: Spearman $\rho = -0.05$ with the number of reviews and with the review
+rate (significant because the sample is large, negligible in size); inside each room type $\rho$ stays
+between $-0.13$ and $0.00$. The \$50-99 band has the highest median review rate (0.46 per month); above
+\$200 the rate falls to 0.17 for \$500-1{,}000, and the share of \textbf{never-reviewed} listings rises
+from 18\% around \$50-150 to \textbf{37\% above \$500}. Many reviews do not justify a higher price,
+and demand concentrates on affordable listings.
+
+\subsection{Which factors seem to affect price? (Q5)}
+\fig[0.86]{fig09_price_factors}{Effect of each factor on the price per night, other factors held constant (multiple regression of the log price, 95\% confidence intervals). Reference: private room, Brooklyn, 1-2 nights, 0 days available, host with 1 listing.}
+A multiple regression of the log price measures each factor with the others held constant. It
+explains \textbf{52\%} of the variation of the price (59\% with the 221 neighbourhoods instead of the
+five boroughs).
+\begin{itemize}
+\item \textbf{Room type is the strongest factor}: alone it explains 41\% of the variation. An entire
+home costs \textbf{+119\%} compared with a private room, a shared room $-33\%$.
+\item \textbf{Location comes second}: the neighbourhood alone explains 29\%, the borough 14\%. Compared
+with Brooklyn, a comparable listing costs \textbf{+37\% in Manhattan}, $-13\%$ in Queens and $-24\%$
+in the Bronx and Staten Island.
+\item \textbf{Minimum stay}: listings that require 30+ nights are 26\% cheaper per night (7-29 nights:
+$-18\%$): monthly rentals with a lower nightly rate.
+\item \textbf{Availability}: listings open most of the year are 13\% to 34\% more expensive than closed
+ones, the pattern of full-time listings.
+\item \textbf{Host size has no effect} once room type and location are taken into account, and more
+reviews go with slightly lower prices ($-5\%$ per unit of log reviews).
+\end{itemize}
+The remaining 48\% depends on what the file does not contain: size, quality, amenities.
+
+\subsection{Which areas or listings perform best? (Q6)}
+\fig[0.86]{fig10_performance}{Median price and median review rate of the 98 neighbourhoods with 50+ listings (bubble = number of listings); dashed lines: city medians.}
+Performance is measured by demand, the review rate. Among the 98 neighbourhoods with 50+ listings,
+the highest median review rates are \textbf{East Elmhurst (3.76 reviews per month, next to LaGuardia
+airport)} and \textbf{Springfield Gardens (2.53, next to JFK)}, then Queens Village, Mott Haven (Bronx),
+Jamaica and Flushing, all at a median price of \$60 to \$80: \textbf{cheap and busy}. Large central
+areas (Williamsburg, Midtown, the Upper West Side) have many listings but low median rates (0.13 to
+0.30), and the expensive Manhattan neighbourhoods (Tribeca, NoHo, Flatiron) sit in the lower right
+corner. At the listing level, 63 of the 100 listings with the highest review rate are in
+\textbf{Queens} and 64 are \textbf{private rooms}, often titled after the airport (``5 mins from
+JFK'', ``LGA airport''). The two Theater District rooms at the top (58.5 and 28 reviews per month)
+look like hotel rooms sold on Airbnb. Two models work: \textbf{volume} (affordable rooms near transport)
+and \textbf{value} (expensive central homes, fewer stays).
+
+\subsection{Are there noticeable patterns or trends? (Q7)}
+\fig{fig11_recency_availability}{Listings by month of their last review (left) and share of listings by availability in the next 365 days (right).}
+\textbf{A large part of the supply is inactive.} Only \textbf{60\%} of the listings were reviewed in the
+last 12 months and 20\% were never reviewed; the last review of 52\% of all listings falls in 2019, with
+a sharp peak in June-July 2019 (the active listings). \textbf{36\% of the listings have 0 days of
+availability}, while 20\% are open almost all year. Demand goes with availability and short stays:
+the review rate rises with availability ($\rho = +0.30$) and falls with the minimum stay
+($\rho = -0.25$).
+\fig{fig12_hosts}{Share of hosts and of listings by host size (left) and minimum stay by host size (right).}
+\textbf{There are two kinds of hosts.} \textbf{86\% of the hosts have a single listing} and hold 66\%
+of the offer, with a median availability of only 6 days: occasional home sharing. At the other end,
+\textbf{343 hosts (0.9\%) run 6 listings or more} and hold \textbf{10\% of the offer} (4{,}755 listings),
+open a median of \textbf{310 days} a year, and \textbf{47\% of their listings require 30+ nights}:
+professional operators of furnished apartments (the 10 largest hosts alone run 1{,}268 listings).
+The file is one snapshot, so trends over time can only be read through the date of the last review.
+
+\subsection{Statistical tests}
+
+Prices and reviews are skewed, so the tests are rank-based. With 48{,}645 listings even weak effects
+are significant; the size of the effect is what matters.
+
+\begin{table}[H]\centering\small
+\caption{Kruskal-Wallis tests on the price, Spearman correlations (95\% bootstrap intervals) and Mann-Whitney test.}
+\begin{tabularx}{\linewidth}{@{}Xrl@{}}
+\toprule
+Test & Effect & Reading\\\midrule
+Price by room type (Kruskal-Wallis) & $\varepsilon^2 = 0.46$ & large\\
+Price by neighbourhood (221 groups) & $\varepsilon^2 = 0.30$ & large\\
+Price by borough & $\varepsilon^2 = 0.14$ & moderate\\
+Price by host size / by minimum stay & $\varepsilon^2 = 0.03$ / $0.02$ & small\\
+Price -- number of reviews & $\rho = -0.05$ [$-0.06$, $-0.04$] & negligible\\
+Price -- reviews per month & $\rho = -0.05$ [$-0.06$, $-0.05$] & negligible\\
+Reviews per month -- availability & $\rho = +0.30$ [0.29, 0.31] & moderate\\
+Reviews per month -- minimum nights & $\rho = -0.25$ [$-0.26$, $-0.24$] & moderate\\
+Entire homes: multi-listing vs single hosts (Mann-Whitney) & medians \$175 vs \$155 & multi-listing hosts ask more\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+All price differences are significant ($p < 0.001$). The regression of Section~4.6 uses robust (HC3)
+standard errors; all effects of room type, borough, minimum stay (except 3-6 nights) and availability
+are significant, host size is not. These are associations, not causes.
+
+% =====================================================================
+\section{Important visualizations}
+
+Each question has one visual chosen for what it must show.
+
+\begin{table}[H]\centering\small
+\caption{Choice of the visuals.}
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+Question & Visual & Why\\\midrule
+Q1 listing types & bars + 100\% stacked bars & counts with the median price on each bar; the mix in each borough\\
+Q2 active areas & side-by-side bars, map & supply and demand next to each other; the map shows where\\
+Q3 prices by area & histogram, box plots, ranked bars & skewed prices need a log scale and the spread, not only an average\\
+Q4 price and reviews & hexbin + two bar charts & 38{,}726 points would hide each other; bands show the trend, one scale per chart\\
+Q5 price factors & dot plot with intervals & one effect per factor, other factors held constant\\
+Q6 best performers & bubble chart & price, demand and size of each neighbourhood at once\\
+Q7 patterns & time line, bars, stacked bars & recency, availability and host profiles\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The \textbf{five most important visuals} are: the room-type mix (Figure~1), because it shows that the
+market is two products; the supply and demand by borough (Figure~2), because Brooklyn leads demand;
+the price by borough and room type (Figure~6); the price factors (Figure~9), because it ranks what
+sets the price; and the demand-price bubble chart (Figure~10), because it shows where listings
+perform best. The figures follow one standard: one fixed colour per borough (a categorical palette
+checked for colour blindness, the same hues in the notebook, the dashboard and the presentation), a
+fixed colour per room type (entire home coral, private room cyan, shared room gold), labelled values
+placed so that no text overlaps another, one scale per chart, medians rather than means, and the base
+of each chart in its title.
+
+% =====================================================================
+\section{Dashboard}\label{sec:dash}
+
+The Power BI dashboard (\nolinkurl{powerbi/NYC_Airbnb_Dashboard.pbix}) is built on the two cleaned
+tables of Section~\ref{sec:clean}, the listings and the cleaning log, so every figure it shows is a
+figure of this report. Its model holds 44 DAX measures: the indicators of the analysis (listings,
+hosts, median and average price, reviews per listing, share of listings reviewed in the last 12
+months, share of multi-listing hosts...), the medians restricted to groups large enough to be
+compared (30 listings for a price, 50 for a review rate), the city median used as a reference, and
+the counts of the cleaning log. Its seven pages follow the questions of the brief
+(Table~\ref{tab:pages}).
+
+\begin{table}[H]\centering\small
+\caption{\label{tab:pages}Pages of the dashboard.}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Page & Content\\\midrule
+1. Home & photo of the New York skyline; eight KPI cards (listings, hosts, median and average price, reviews, reviews per listing, share active in the last 12 months, neighbourhoods); word cloud of the neighbourhoods by number of listings; three picture tiles that open the analysis pages; a scrolling band of the largest neighbourhoods\\
+2. Map \& Boroughs & map of the 48{,}645 listings by borough; listings by borough; listing types; median price by borough (Q1, Q2)\\
+3. Prices & median price by borough and room type; listings by price band; gauge of the median against the city median; the ten most expensive neighbourhoods; median price by minimum stay (Q3, Q5)\\
+4. Demand & demand against price by neighbourhood; the ten busiest listings; median reviews per month by borough and by price band; listings by year of last review (Q2, Q4, Q6)\\
+5. Hosts & shares of hosts and of listings by host size; minimum stay by host size; listings per host and hosts with 6 or more listings; days open in the year; share of multi-listing hosts by borough (Q7)\\
+6. Insights & the nine findings and the recommendations\\
+7. Data Pipeline & raw, removed and clean listings, share kept, cleaning steps; the steps from the supplied file to the model and the cleaning log\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Interactivity.} Five dropdown slicers (borough, neighbourhood, room type, price band, minimum
+stay) run along the top of the four analysis pages and keep their selection from one page to the next.
+Clicking a bar, a slice or a point filters the other visuals of the page, and the cards, the gauge and
+the top-ten visuals follow every selection: the gauge, for example, compares the median of the selected
+listings with the median of the whole city. A page navigator in the header links the seven pages, and
+the picture tiles of the Home page open the Map, Prices and Demand pages. Tooltips add a second figure to each bar (for example the share of listings and the median price of a borough), and every visual carries an alternative text for screen readers.
+
+\textbf{Design.} A dark navy theme with a single blue accent: a header band with a soft blue glow, the
+logo, the title and the page navigator; framed visuals with their title; KPI cards with rounded borders.
+Single measures are blue; a borough and a room type keep the same hue on every page as in the figures of
+this report, lightened for the dark background. The Home page uses the photo of the New York skyline
+supplied with the project, and the map plots each listing on the map of New York City supplied with the
+dataset. The icons are Microsoft's 3D Fluent Emoji (MIT licence).
+Cards, axes and tables use business labels (``Median price'', ``Share of listings'') rather than the technical
+names of the measures; value axes are removed where the values are written on the bars. In the model, the
+44 measures are grouped in display folders (key figures, prices, demand, hosts and availability, shares,
+data quality) with a description, and the technical sort columns are hidden.
+
+\capture{dashboard/p1_home.png}{\label{fig:p1}Home: 48{,}645 listings, 37{,}283 hosts, a median of \$105 and an average of \$141.31 per night, 1{,}136{,}096 reviews (23.4 per listing), 59.8\% of listings active in the last 12 months, 221 neighbourhoods; Williamsburg and Bedford-Stuyvesant are the largest neighbourhoods.}
+\capture{dashboard/p2_map_boroughs.png}{\label{fig:p2}Map \& Boroughs: Manhattan (21{,}488) and Brooklyn (20{,}041) hold 85\% of the listings; 51.8\% entire homes and 45.8\% private rooms; median of \$149 in Manhattan and \$65 in the Bronx.}
+\capture{dashboard/p3_prices.png}{\label{fig:p3}Prices: an entire home costs \$190 in Manhattan and \$100 in the Bronx; one listing in three asks \$50 to \$99; without a filter the gauge sits on the city median of \$105; Tribeca is the most expensive neighbourhood (\$282, all room types).}
+\capture{dashboard/p4_demand.png}{\label{fig:p4}Demand: the cheap neighbourhoods of Queens get the most reviews a month; demand is highest in Staten Island (1.00) and lowest in Manhattan (0.29), and falls above \$100 a night; 25{,}148 listings were last reviewed in 2019.}
+\capture{dashboard/p5_hosts.png}{\label{fig:p5}Hosts: 86.2\% of hosts have one listing and hold 66.1\% of the listings; the 343 hosts with 6 or more hold 9.8\%, 47\% of them with stays of 30 nights or more; 35.9\% of calendars closed.}
+\capture{dashboard/p6_insights.png}{\label{fig:p6}Insights: the nine findings and the recommendations for hosts, Airbnb and the city.}
+\capture{dashboard/p7_data_pipeline.png}{\label{fig:p7}Data Pipeline: 48{,}895 raw listings, 250 removed, 48{,}645 kept (99.49\%), ten cleaning steps.}
+
+% =====================================================================
+\section{Key findings}
+
+\begin{enumerate}
+\item \textbf{Two products}: entire homes (52\%, median \$160) and private rooms (46\%, \$70).
+\item \textbf{Two leading boroughs}: Manhattan and Brooklyn hold 85\% of the listings; Brooklyn
+receives the most reviews (42.8\%) and Bedford-Stuyvesant is the most reviewed neighbourhood.
+\item \textbf{Intensive outer boroughs}: Staten Island 31 and Queens 28 reviews per listing, Manhattan 21.
+\item \textbf{A price gradient}: median \$149 in Manhattan, \$65 in the Bronx; Tribeca \$305 and Midwood
+\$88 for an entire home.
+\item \textbf{What sets the price}: room type (+119\%), location (+37\% in Manhattan vs Brooklyn),
+minimum stay ($-26\%$ for 30+ nights); host size has no effect.
+\item \textbf{Price and reviews are unrelated} ($\rho = -0.05$); 37\% of listings above \$500 were never reviewed.
+\item \textbf{The busiest areas are near the airports}: East Elmhurst 3.76 and Springfield Gardens 2.53
+reviews per month, at \$60-80.
+\item \textbf{40\% of the listings look inactive}; 36\% have a closed calendar.
+\item \textbf{A small professional segment}: 0.9\% of hosts, 10\% of listings, open 310 days a year,
+half with 30+ night stays.
+\end{enumerate}
+
+% =====================================================================
+\section{Business insights}\label{sec:ins}
+
+\begin{table}[H]\centering\small
+\caption{Insights: what was discovered, what it means and why it is important.}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{3.9cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\toprule
+What we discovered & What it means & Why it is important\\\midrule
+Entire homes and private rooms make 98\% of the offer, at \$160 and \$70 & two products with two kinds of guests & prices and competitors must be compared within a room type\\
+Brooklyn has fewer listings than Manhattan but more reviews & demand has moved beyond Manhattan & Brooklyn is as important as Manhattan for growth\\
+Outer boroughs have more reviews per listing & supply is short where demand per listing is high & new hosts there face less competition\\
+Price falls with the distance from Manhattan & location sets the price level & a city-wide average is a wrong benchmark\\
+Room type and location explain most of the price; host size does not & hosts control the price through what and where they offer & pricing advice can be built on few variables\\
+Price and reviews are unrelated; expensive listings are more often never reviewed & reviews follow affordability, not price & a high price does not bring more stays\\
+Cheap rooms near the airports are the busiest listings & convenience and price win short stays & a clear, under-served niche\\
+40\% of the listings were not reviewed in 12 months & headline counts over-state the active supply & search results and market size are inflated\\
+0.9\% of hosts run 10\% of the listings, open all year & a professional segment behaves differently & the city can target checks without burdening home sharers\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+\section{Recommendations}
+
+\textbf{For hosts}
+\begin{enumerate}
+\item \textbf{Price against the right benchmark}: the median of the same room type in the same
+neighbourhood (Prices page), not the city average; a price far above it needs a visible reason.
+\item \textbf{Consider the outer boroughs and transport hubs}: rooms near JFK and LaGuardia and in
+Queens are booked far more often, at a median of \$60-80.
+\item \textbf{Open the calendar and shorten the minimum stay} if the goal is short stays: demand rises
+with availability ($\rho = +0.30$) and falls with the minimum stay ($\rho = -0.25$).
+\end{enumerate}
+\textbf{For Airbnb}
+\begin{enumerate}[resume]
+\item \textbf{Activate dormant supply}: 20\% of the listings were never reviewed and 36\% have a closed
+calendar; reminders, pricing tips or delisting would make search results more reliable.
+\item \textbf{Recruit hosts where demand per listing is high} (Queens, the Bronx, Staten Island) rather
+than in saturated central areas.
+\item \textbf{Segment the offer by guest type}: affordable rooms for short, convenience-driven trips;
+entire homes in Manhattan for leisure and families; monthly rentals for longer stays.
+\end{enumerate}
+\textbf{For the city}
+\begin{enumerate}[resume]
+\item \textbf{Monitor the professional segment}: host size, availability and minimum stay identify the
+operators of many entire homes (343 hosts with 4{,}755 listings) and allow targeted checks of the rules
+on short-term rentals.
+\end{enumerate}
+\textbf{For the next analysis}
+\begin{enumerate}[resume]
+\item \textbf{Add ratings, bookings and property size} to move from demand proxies to satisfaction,
+occupancy and revenue.
+\end{enumerate}
+
+\subsection*{Limitations}
+\begin{itemize}
+\item No ratings: Q4 is answered with reviews, which measure demand, not satisfaction.
+\item No bookings or revenue: prices are asked prices, and not every guest leaves a review.
+\item No property size or quality, which is why the price model stops at $R^2 = 0.52$.
+\item One snapshot: time patterns come from the date of the last review only.
+\item Listings above \$1{,}000 per night (0.5\%) are excluded: the luxury segment is not covered.
+\end{itemize}
+
+% =====================================================================
+\section{Conclusion}
+
+From a raw file of 48{,}895 listings, this project produced a clean and documented dataset (48{,}645
+listings, 10 logged steps), answered the seven questions of the brief with figures and tests, and
+delivered an interactive Power BI dashboard. The New York Airbnb market of 2019 is a market of
+\textbf{two products} (entire homes and private rooms), \textbf{concentrated in Manhattan and
+Brooklyn}, where \textbf{the room type and the location set the price}. Demand, measured by reviews,
+does not follow the price: it is strongest for \textbf{affordable rooms in the outer boroughs and near
+the airports}. A large part of the listed supply is inactive, and a small group of professional hosts
+runs one listing in ten. These findings give hosts a pricing benchmark, Airbnb a map of where supply
+is short or dormant, and the city a way to identify professional operators. Adding ratings, bookings
+and property size would turn this demand analysis into an analysis of satisfaction and revenue.
+
+\section*{Reproducibility}
+
+Every number, table and figure of this report is produced by the notebook
+\nolinkurl{NYC-Airbnb-Analytics.ipynb} from the files of \nolinkurl{data/raw/}. The notebook writes
+the cleaned dataset and the cleaning log (\nolinkurl{data/processed/}), the result tables
+(\nolinkurl{results/}) and the figures (\nolinkurl{figures/}). The dashboard
+\nolinkurl{powerbi/NYC_Airbnb_Dashboard.pbix} reads \nolinkurl{data/processed/}. The final presentation is
+\nolinkurl{presentation/NYC_Airbnb_Final_Presentation.pptx}. The project is
+published at \url{https://github.com/koffifidelek59-collab/nyc-airbnb-analytics}.
+
+\section*{References}
+{\small\begin{enumerate}[itemsep=0pt]
+\item Data Analysis Internship, Task 12. \emph{AB\_NYC\_2019.csv} and \emph{New\_York\_City\_.png}, dataset supplied for the final project.
+\item Gebru, T. et al. (2021). Datasheets for Datasets. \emph{Communications of the ACM}, 64(12), 86--92.
+\item Kruskal, W. H., \& Wallis, W. A. (1952). Use of ranks in one-criterion variance analysis. \emph{Journal of the American Statistical Association}, 47(260), 583--621.
+\item Seabold, S., \& Perktold, J. (2010). statsmodels: Econometric and statistical modeling with Python. \emph{Proceedings of the 9th Python in Science Conference}.
+\item Microsoft. Power BI documentation. \url{https://learn.microsoft.com/power-bi/}
+\item Microsoft. \emph{Fluent Emoji} (3D icons of the dashboard), MIT License. \url{https://github.com/microsoft/fluentui-emoji}
+\end{enumerate}}
+
+\enlargethispage{4\baselineskip}
+\vspace{0.1cm}
+\noindent\hfill\begin{minipage}{7cm}\begin{flushright}\singlespacing
+\textbf{KOUAME Koffi Fid\`ele}\\
+Data Analysis Internship\\
+\href{mailto:koffifidelek59@gmail.com}{koffifidelek59@gmail.com}
+\end{flushright}\end{minipage}
+
+\end{document}
