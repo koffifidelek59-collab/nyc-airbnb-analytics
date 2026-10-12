@@ -1,0 +1,221 @@
+// DAX measures of the NYC Airbnb dashboard
+
+// folder: 1 Key figures | Number of listings in the current selection.
+Listings[Total Listings] =
+    COUNTROWS ( Listings )
+    -- format: #,0
+
+// folder: 1 Key figures | Number of distinct hosts (host_id).
+Listings[Total Hosts] =
+    DISTINCTCOUNT ( Listings[Host ID] )
+    -- format: #,0
+
+// folder: 2 Prices | Median asked price per night (US$): the price of a typical listing.
+Listings[Median Price] =
+    MEDIAN ( Listings[Price] )
+    -- format: "$"#,0
+
+// folder: 2 Prices | Mean asked price per night (US$), pulled up by expensive listings.
+Listings[Average Price] =
+    AVERAGE ( Listings[Price] )
+    -- format: "$"#,0.00
+
+// folder: 1 Key figures
+Listings[Total Reviews] =
+    SUM ( Listings[Number of Reviews] )
+    -- format: #,0
+
+// folder: 3 Demand
+Listings[Avg Reviews per Month] =
+    AVERAGE ( Listings[Reviews per Month] )
+    -- format: 0.00
+
+// folder: 3 Demand | Median number of reviews per month: proxy of the demand of a typical listing.
+Listings[Median Reviews per Month] =
+    MEDIAN ( Listings[Reviews per Month] )
+    -- format: 0.00
+
+// folder: 3 Demand | Share of listings reviewed in the 12 months before the last review date of the file.
+Listings[Reviewed Last 12 Months %] =
+    DIVIDE ( CALCULATE ( COUNTROWS ( Listings ), Listings[Active 12m] = "Yes" ), COUNTROWS ( Listings ) )
+    -- format: 0.0%
+
+// folder: 3 Demand
+Listings[Never Reviewed %] =
+    DIVIDE ( CALCULATE ( COUNTROWS ( Listings ), Listings[Has Reviews] = "No" ), COUNTROWS ( Listings ) )
+    -- format: 0.0%
+
+// folder: 4 Hosts and availability
+Listings[Avg Availability (days)] =
+    AVERAGE ( Listings[Availability 365] )
+    -- format: 0.0
+
+// folder: 4 Hosts and availability
+Listings[Closed Calendar %] =
+    DIVIDE ( CALCULATE ( COUNTROWS ( Listings ), Listings[Availability 365] = 0 ), COUNTROWS ( Listings ) )
+    -- format: 0.0%
+
+// folder: 4 Hosts and availability | Share of listings whose host has more than one listing.
+Listings[Multi-listing Host Share] =
+    DIVIDE ( CALCULATE ( COUNTROWS ( Listings ), Listings[Host Listings] > 1 ), COUNTROWS ( Listings ) )
+    -- format: 0.0%
+
+// folder: 5 Shares and map
+Listings[Entire Home Share] =
+    DIVIDE ( CALCULATE ( COUNTROWS ( Listings ), Listings[Room Type] = "Entire home/apt" ), COUNTROWS ( Listings ) )
+    -- format: 0.0%
+
+// folder: 5 Shares and map | Share of the listings of the current selection (ALLSELECTED).
+Listings[Listing Share] =
+    DIVIDE ( [Total Listings], CALCULATE ( [Total Listings], ALLSELECTED ( Listings ) ) )
+    -- format: 0.0%
+
+// folder: 5 Shares and map | Share of the hosts of the current selection (ALLSELECTED).
+Listings[Host Share] =
+    DIVIDE ( [Total Hosts], CALCULATE ( [Total Hosts], ALLSELECTED ( Listings ) ) )
+    -- format: 0.0%
+
+// folder: 4 Hosts and availability
+Listings[Avg Minimum Nights] =
+    AVERAGE ( Listings[Minimum Nights] )
+    -- format: 0.0
+
+// folder: 5 Shares and map
+Listings[Top Borough] =
+    VAR t = TOPN ( 1, VALUES ( Listings[Borough] ), [Total Listings] ) RETURN CONCATENATEX ( t, Listings[Borough], ", " )
+    -- format: text
+
+// folder: 5 Shares and map
+Listings[Top Neighbourhood] =
+    VAR t = TOPN ( 1, VALUES ( Listings[Neighbourhood] ), [Total Listings] ) RETURN CONCATENATEX ( t, Listings[Neighbourhood], ", " )
+    -- format: text
+
+// folder: 2 Prices | Median price, shown only for groups of 30 listings or more.
+Listings[Median Price (30+ listings)] =
+    IF ( [Total Listings] >= 30, [Median Price] )
+    -- format: "$"#,0
+
+// folder: 3 Demand | Median reviews per month, shown only for groups of 50 listings or more.
+Listings[Median Reviews per Month (50+ listings)] =
+    IF ( [Total Listings] >= 50, [Median Reviews per Month] )
+    -- format: 0.00
+
+// folder: 5 Shares and map
+Listings[Avg Latitude] =
+    AVERAGE ( Listings[Latitude] )
+    -- format: 0.000
+
+// folder: 5 Shares and map
+Listings[Avg Longitude] =
+    AVERAGE ( Listings[Longitude] )
+    -- format: 0.000
+
+// folder: 1 Key figures
+Listings[Reviews per Listing] =
+    DIVIDE ( [Total Reviews], [Total Listings] )
+    -- format: 0.0
+
+// folder: 1 Key figures
+Listings[Listings per Host] =
+    DIVIDE ( [Total Listings], [Total Hosts] )
+    -- format: 0.00
+
+// folder: 2 Prices
+Listings[Median Price Entire Home] =
+    CALCULATE ( [Median Price], KEEPFILTERS ( Listings[Room Type] = "Entire home/apt" ) )
+    -- format: "$"#,0
+
+// folder: 2 Prices
+Listings[Median Price Private Room] =
+    CALCULATE ( [Median Price], KEEPFILTERS ( Listings[Room Type] = "Private room" ) )
+    -- format: "$"#,0
+
+// folder: 2 Prices
+Listings[Premium Listings %] =
+    DIVIDE ( CALCULATE ( COUNTROWS ( Listings ), Listings[Price] >= 300 ), COUNTROWS ( Listings ) )
+    -- format: 0.0%
+
+// folder: 4 Hosts and availability | Hosts with 6 listings or more: the professional segment.
+Listings[Hosts with 6+ Listings] =
+    CALCULATE ( [Total Hosts], KEEPFILTERS ( Listings[Host Size] = "6+ listings" ) )
+    -- format: #,0
+
+// folder: 4 Hosts and availability
+Listings[Median Availability (days)] =
+    MEDIAN ( Listings[Availability 365] )
+    -- format: 0
+
+// folder: 5 Shares and map
+Listings[Private Room Share] =
+    DIVIDE ( CALCULATE ( COUNTROWS ( Listings ), Listings[Room Type] = "Private room" ), COUNTROWS ( Listings ) )
+    -- format: 0.0%
+
+// folder: 2 Prices
+Listings[Premium Listings] =
+    CALCULATE ( COUNTROWS ( Listings ), Listings[Price] >= 300 )
+    -- format: #,0
+
+// folder: 3 Demand
+Listings[Active Listings] =
+    CALCULATE ( COUNTROWS ( Listings ), Listings[Active 12m] = "Yes" )
+    -- format: #,0
+
+// folder: 3 Demand
+Listings[Never Reviewed Listings] =
+    CALCULATE ( COUNTROWS ( Listings ), Listings[Has Reviews] = "No" )
+    -- format: #,0
+
+// folder: 4 Hosts and availability
+Listings[Multi-host Listings] =
+    CALCULATE ( COUNTROWS ( Listings ), Listings[Host Listings] > 1 )
+    -- format: #,0
+
+// folder: 4 Hosts and availability
+Listings[Single-listing Host Share] =
+    DIVIDE ( CALCULATE ( [Total Hosts], KEEPFILTERS ( Listings[Host Size] = "1 listing" ) ), [Total Hosts] )
+    -- format: 0.0%
+
+// folder: 4 Hosts and availability
+Listings[Listings of 6+ Hosts] =
+    CALCULATE ( [Total Listings], KEEPFILTERS ( Listings[Host Size] = "6+ listings" ) )
+    -- format: #,0
+
+// folder: 2 Prices
+Listings[Highest Price] =
+    MAX ( Listings[Price] )
+    -- format: "$"#,0
+
+// folder: 2 Prices | Median price of the whole city, ignoring every filter: reference of the gauge.
+Listings[City Median Price] =
+    CALCULATE ( [Median Price], ALL ( Listings ) )
+    -- format: "$"#,0
+
+// folder: 1 Key figures
+Listings[Total Neighbourhoods] =
+    DISTINCTCOUNT ( Listings[Neighbourhood] )
+    -- format: #,0
+
+// folder: Data quality | Listings of the supplied file before cleaning.
+Cleaning Log[Raw Listings] =
+    CALCULATE ( MAX ( 'Cleaning Log'[Rows After] ), 'Cleaning Log'[Step] = 1 )
+    -- format: #,0
+
+// folder: Data quality | Listings kept after the ten cleaning steps.
+Cleaning Log[Clean Listings] =
+    MIN ( 'Cleaning Log'[Rows After] )
+    -- format: #,0
+
+// folder: Data quality
+Cleaning Log[Removed Listings] =
+    [Raw Listings] - [Clean Listings]
+    -- format: #,0
+
+// folder: Data quality
+Cleaning Log[Kept %] =
+    DIVIDE ( [Clean Listings], [Raw Listings] )
+    -- format: 0.00%
+
+// folder: Data quality
+Cleaning Log[Cleaning Steps] =
+    COUNTROWS ( 'Cleaning Log' )
+    -- format: #,0
