@@ -1,0 +1,11 @@
+Step,Name,Action,Rows Affected,Rows After,Median Price After
+1,Raw file,"AB_NYC_2019.csv as supplied (48,895 listings, 16 columns)",0,48895,106.0
+2,Duplicates,Checked on the listing id and on all the other columns: no duplicate found,0,48895,106.0
+3,Columns,"host_name dropped: personal data, not needed (host_id identifies the host); 16 columns -> 15",0,48895,106.0
+4,Text,Spaces trimmed in 254 names; 16 missing names set to 'Unnamed listing',270,48895,106.0
+5,Types,last_review converted from text to date; ids kept as integers; categories checked,38843,48895,106.0
+6,Missing reviews,10052 listings never reviewed: reviews_per_month = 0; last_review kept empty (no date exists),10052,48895,106.0
+7,Price = 0,11 listings at $0 per night removed (a stay cannot be free; data entry error),11,48884,106.0
+8,"Price > $1,000","239 listings above $1,000 per night removed: placeholders ($9,999, $10,000) and luxury outliers (0.5 % of listings) that distort averages; kept in the raw file",239,48645,105.0
+9,Minimum nights,"14 values above 365 nights (up to 1,250) capped at 365: no booking rule can exceed one year",14,48645,105.0
+10,Derived columns,"price band, minimum-stay class, availability band, host size, year of last review, days since last review, active in the last 12 months, sort orders",48645,48645,105.0
