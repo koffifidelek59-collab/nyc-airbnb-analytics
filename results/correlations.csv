@@ -1,0 +1,8 @@
+Variable 1,Variable 2,rho,CI low,CI high
+price,number_of_reviews,-0.0493,-0.0589,-0.0405
+price,reviews_per_month,-0.0542,-0.064,-0.0451
+price,availability_365,0.0833,0.0748,0.0925
+price,minimum_nights,0.1027,0.0931,0.1109
+price,calculated_host_listings_count,-0.1065,-0.1157,-0.097
+reviews_per_month,availability_365,0.3009,0.2926,0.31
+reviews_per_month,minimum_nights,-0.25,-0.2591,-0.2415

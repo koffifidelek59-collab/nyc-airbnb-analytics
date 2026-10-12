@@ -1,0 +1,16 @@
+Level,Factor,Level,Effect %,Low %,High %,p
+Entire home/apt,room,Entire home/apt,119.335,117.3805,121.3071,0.0
+Shared room,room,Shared room,-32.7586,-35.0677,-30.3674,0.0
+Manhattan,borough,Manhattan,37.4636,36.2045,38.7343,0.0
+Queens,borough,Queens,-13.4283,-14.5543,-12.2875,0.0
+Bronx,borough,Bronx,-23.998,-26.1244,-21.8104,0.0
+Staten Island,borough,Staten Island,-24.2195,-28.0519,-20.1829,0.0
+3-6 nights,stay,3-6 nights,-0.6902,-1.6476,0.2766,0.1612
+7-29 nights,stay,7-29 nights,-18.4503,-19.6418,-17.2412,0.0
+30+ nights,stay,30+ nights,-25.8316,-27.1779,-24.4604,0.0
+1-90 days,avail,1-90 days,13.4848,12.1913,14.7932,0.0
+91-180 days,avail,91-180 days,23.0861,21.2421,24.9581,0.0
+181-270 days,avail,181-270 days,25.0744,22.9856,27.1987,0.0
+271-365 days,avail,271-365 days,34.1866,32.322,36.0774,0.0
+2-5 listings,host,2-5 listings,-0.6483,-1.6872,0.4015,0.2252
+6+ listings,host,6+ listings,-0.3508,-2.1737,1.5061,0.7091

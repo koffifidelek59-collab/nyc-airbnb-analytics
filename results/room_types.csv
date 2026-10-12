@@ -1,0 +1,4 @@
+room_type,Listings,Median_price,Mean_price,Reviews,Median_rpm,Share,Review share
+Entire home/apt,25216,160.0,194.6124,578947,0.35,0.5184,0.5096
+Private room,22273,70.0,84.7873,537906,0.4,0.4579,0.4735
+Shared room,1156,45.0,67.7318,19243,0.41,0.0238,0.0169

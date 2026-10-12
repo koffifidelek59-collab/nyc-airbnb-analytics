@@ -1,0 +1,6 @@
+Factor,Groups,H,p-value,epsilon²
+Borough,5,6954.03039,0.0,0.14296
+Room type,3,22425.13533,0.0,0.46101
+Host size,3,1305.3389,0.0,0.02683
+Minimum stay,4,805.59057,0.0,0.01656
+Neighbourhood,221,14557.09479,0.0,0.29926

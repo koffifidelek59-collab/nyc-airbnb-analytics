@@ -1,0 +1,6 @@
+neighbourhood_group,Listings,Hosts,Reviews,Reviews_12m,Median_rpm,Median_price,Listing share,Review share,Reviews per listing
+Manhattan,21488,16452,453413,11925,0.29,149.0,0.4417,0.3991,21.1008
+Brooklyn,20041,15926,485887,12202,0.38,90.0,0.412,0.4277,24.2446
+Queens,5656,3976,156939,3873,0.76,75.0,0.1163,0.1381,27.7473
+Bronx,1089,789,28316,780,0.87,65.0,0.0224,0.0249,26.0018
+Staten Island,371,254,11541,300,1.0,75.0,0.0076,0.0102,31.1078
